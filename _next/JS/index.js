@@ -197,7 +197,7 @@ function nextRequirement() {
 }
 
 // Auto-cycle through requirements
-let requirementInterval = setInterval(nextRequirement, 4000);
+let requirementInterval = setInterval(nextRequirement, 3000);
 
 // Add click handlers for dots
 dots.forEach((dot, index) => {
@@ -207,16 +207,19 @@ dots.forEach((dot, index) => {
         
         // Reset interval
         clearInterval(requirementInterval);
-        requirementInterval = setInterval(nextRequirement, 4000);
+        requirementInterval = setInterval(nextRequirement, 3000);
     });
 });
 
 // Pause animation on hover
 const requirementsSection = document.querySelector('.clearance-requirements');
+// On page load and reload, show the first requirement
+showRequirement(0);
+
 requirementsSection.addEventListener('mouseenter', () => {
     clearInterval(requirementInterval);
 });
 
 requirementsSection.addEventListener('mouseleave', () => {
-    requirementInterval = setInterval(nextRequirement, 4000);
+    requirementInterval = setInterval(nextRequirement, 3000);
 });
