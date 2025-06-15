@@ -1,111 +1,130 @@
-        // Initialize Supabase client
-        const supabaseUrl = 'YOUR_SUPABASE_URL';
-        const supabaseKey = 'YOUR_SUPABASE_ANON_KEY';
-        
-        // Note: Replace with your actual Supabase credentials
-        let supabase;
-        try {
-            supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
-        } catch (error) {
-            console.log('Supabase not configured. Using mock authentication for demo.');
-        }
+// index.js - Production Authentication for your main page
+// This replaces your existing index.js file
 
-        // Modal functions
-        function openModal(type) {
-            const modalId = type === 'login' ? 'loginModal' : 'signupModal';
-            document.getElementById(modalId).style.display = 'block';
-            document.body.style.overflow = 'hidden';
-        }
+// Modal functions
+function openModal(type) {
+    const modalId = type === 'login' ? 'loginModal' : 'signupModal';
+    document.getElementById(modalId).style.display = 'block';
+    document.body.style.overflow = 'hidden';
+}
 
-        function closeModal(modalId) {
-            document.getElementById(modalId).style.display = 'none';
+function closeModal(modalId) {
+    document.getElementById(modalId).style.display = 'none';
+    document.body.style.overflow = 'auto';
+    clearMessages();
+}
+
+function switchModal(fromModal, toModal) {
+    document.getElementById(fromModal).style.display = 'none';
+    document.getElementById(toModal).style.display = 'block';
+    clearMessages();
+}
+
+function clearMessages() {
+    const messages = document.querySelectorAll('.error-message, .success-message');
+    messages.forEach(msg => msg.style.display = 'none');
+}
+
+function showMessage(elementId, message, isError = true) {
+    const element = document.getElementById(elementId);
+    if (!element) return;
+    
+    element.textContent = message;
+    element.style.display = 'block';
+    
+    // Hide other message types
+    const otherType = isError ? elementId.replace('Error', 'Success') : elementId.replace('Success', 'Error');
+    const otherElement = document.getElementById(otherType);
+    if (otherElement) otherElement.style.display = 'none';
+}
+
+// Close modal when clicking outside
+window.onclick = function(event) {
+    const modals = document.querySelectorAll('.modal');
+    modals.forEach(modal => {
+        if (event.target === modal) {
+            modal.style.display = 'none';
             document.body.style.overflow = 'auto';
             clearMessages();
         }
+    });
+}
 
-        function switchModal(fromModal, toModal) {
-            document.getElementById(fromModal).style.display = 'none';
-            document.getElementById(toModal).style.display = 'block';
-            clearMessages();
-        }
+// Login form handler
+document.addEventListener('DOMContentLoaded', function() {
+    const loginForm = document.getElementById('loginForm');
+    const signupForm = document.getElementById('signupForm');
 
-        function clearMessages() {
-            const messages = document.querySelectorAll('.error-message, .success-message');
-            messages.forEach(msg => msg.style.display = 'none');
-        }
-
-        function showMessage(elementId, message, isError = true) {
-            const element = document.getElementById(elementId);
-            element.textContent = message;
-            element.style.display = 'block';
-            
-            // Hide other message types
-            const otherType = isError ? elementId.replace('Error', 'Success') : elementId.replace('Success', 'Error');
-            const otherElement = document.getElementById(otherType);
-            if (otherElement) otherElement.style.display = 'none';
-        }
-
-        // Close modal when clicking outside
-        window.onclick = function(event) {
-            const modals = document.querySelectorAll('.modal');
-            modals.forEach(modal => {
-                if (event.target === modal) {
-                    modal.style.display = 'none';
-                    document.body.style.overflow = 'auto';
-                    clearMessages();
-                }
-            });
-        }
-
-        // Login form handler
-        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+    if (loginForm) {
+        loginForm.addEventListener('submit', async function(e) {
             e.preventDefault();
             
-            const email = document.getElementById('loginEmail').value;
+            const email = document.getElementById('loginEmail').value.trim();
             const password = document.getElementById('loginPassword').value;
+            const submitBtn = this.querySelector('button[type="submit"]');
+            
+            // Validation
+            if (!email || !password) {
+                showMessage('loginError', 'Please fill in all fields', true);
+                return;
+            }
+
+            // Show loading state
+            const originalText = submitBtn.textContent;
+            submitBtn.textContent = 'Signing in...';
+            submitBtn.disabled = true;
+            clearMessages();
 
             try {
-                if (supabase) {
-                    const { data, error } = await supabase.auth.signInWithPassword({
-                        email: email,
-                        password: password
-                    });
+                console.log('🔐 Attempting login for:', email);
+                const result = await window.supabaseManager.signIn(email, password);
 
-                    if (error) {
-                        showMessage('loginError', error.message, true);
-                    } else {
-                        showMessage('loginSuccess', 'Login successful! Redirecting...', false);
-                        setTimeout(() => {
-                            closeModal('loginModal');
-                            // Redirect to dashboard or main app
-                            alert('Login successful! Welcome to FUTO Clearance Portal.');
-                        }, 1500);
-                    }
+                if (result.success) {
+                    showMessage('loginSuccess', 'Login successful! Redirecting...', false);
+                    
+                    // Store session info
+                    sessionStorage.setItem('futo_user_session', JSON.stringify({
+                        email: email,
+                        userId: result.data.user.id,
+                        loggedIn: true,
+                        timestamp: Date.now()
+                    }));
+                    
+                    // Redirect after short delay
+                    setTimeout(() => {
+                        window.location.href = './test.html';
+                    }, 1500);
+                    
                 } else {
-                    // Mock authentication for demo
-                    if (email && password) {
-                        showMessage('loginSuccess', 'Login successful! (Demo mode)', false);
-                        setTimeout(() => {
-                            closeModal('loginModal');
-                            alert('Demo login successful! In production, this would redirect to your dashboard.');
-                        }, 1500);
-                    } else {
-                        showMessage('loginError', 'Please fill in all fields', true);
-                    }
+                    showMessage('loginError', result.error || 'Login failed', true);
                 }
             } catch (error) {
-                showMessage('loginError', 'An error occurred during login', true);
+                console.error('Login error:', error);
+                showMessage('loginError', 'An unexpected error occurred', true);
+            } finally {
+                // Reset button state
+                submitBtn.textContent = originalText;
+                submitBtn.disabled = false;
             }
         });
+    }
 
-        // Signup form handler
-        document.getElementById('signupForm').addEventListener('submit', async function(e) {
+    // Signup form handler
+    if (signupForm) {
+        signupForm.addEventListener('submit', async function(e) {
             e.preventDefault();
             
-            const name = document.getElementById('signupName').value;
-            const email = document.getElementById('signupEmail').value;
+            const name = document.getElementById('signupName').value.trim();
+            const email = document.getElementById('signupEmail').value.trim();
             const password = document.getElementById('signupPassword').value;
             const confirmPassword = document.getElementById('confirmPassword').value;
+            const submitBtn = this.querySelector('button[type="submit"]');
+
+            // Validation
+            if (!name || !email || !password || !confirmPassword) {
+                showMessage('signupError', 'Please fill in all fields', true);
+                return;
+            }
 
             if (password !== confirmPassword) {
                 showMessage('signupError', 'Passwords do not match', true);
@@ -117,109 +136,181 @@
                 return;
             }
 
-            try {
-                if (supabase) {
-                    const { data, error } = await supabase.auth.signUp({
-                        email: email,
-                        password: password,
-                        options: {
-                            data: {
-                                full_name: name
-                            }
-                        }
-                    });
+            // Email validation
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                showMessage('signupError', 'Please enter a valid email address', true);
+                return;
+            }
 
-                    if (error) {
-                        showMessage('signupError', error.message, true);
-                    } else {
-                        showMessage('signupSuccess', 'Account created successfully! Please check your email to verify your account.', false);
-                        setTimeout(() => {
-                            switchModal('signupModal', 'loginModal');
-                        }, 2000);
-                    }
+            // Show loading state
+            const originalText = submitBtn.textContent;
+            submitBtn.textContent = 'Creating account...';
+            submitBtn.disabled = true;
+            clearMessages();
+
+            try {
+                console.log('📝 Attempting registration for:', email);
+                const result = await window.supabaseManager.signUp(email, password, {
+                    full_name: name
+                });
+
+                if (result.success) {
+                    showMessage('signupSuccess', 
+                        'Account created successfully! Please check your email to verify your account before signing in.',
+                        false
+                    );
+                    
+                    // Clear form
+                    this.reset();
+                    
+                    // Switch to login modal after delay
+                    setTimeout(() => {
+                        switchModal('signupModal', 'loginModal');
+                    }, 3000);
+                    
                 } else {
-                    // Mock authentication for demo
-                    if (name && email && password) {
-                        showMessage('signupSuccess', 'Account created successfully! (Demo mode)', false);
-                        setTimeout(() => {
-                            switchModal('signupModal', 'loginModal');
-                        }, 1500);
-                    } else {
-                        showMessage('signupError', 'Please fill in all fields', true);
-                    }
+                    showMessage('signupError', result.error || 'Registration failed', true);
                 }
             } catch (error) {
-                showMessage('signupError', 'An error occurred during signup', true);
+                console.error('Signup error:', error);
+                showMessage('signupError', 'An unexpected error occurred', true);
+            } finally {
+                // Reset button state
+                submitBtn.textContent = originalText;
+                submitBtn.disabled = false;
             }
         });
-
-        // Add smooth scrolling and enhanced animations
-        document.addEventListener('DOMContentLoaded', function() {
-            // Add stagger animation to elements
-            const animatedElements = document.querySelectorAll('.hero > *');
-            animatedElements.forEach((el, index) => {
-                el.style.animationDelay = `${index * 0.2}s`;
-            });
-        });
- function toggleMobileMenu() {
-        const menu = document.getElementById('mobileMenu');
-        menu.style.display = menu.style.display === 'flex' ? 'none' : 'flex';
-        document.body.addEventListener('click', closeMenuOnClickOutside, { once: true });
     }
-    function closeMenuOnClickOutside(e) {
-        const menu = document.getElementById('mobileMenu');
-        const toggle = document.querySelector('.mobile-menu-toggle');
-        if (!menu.contains(e.target) && !toggle.contains(e.target)) {
-            menu.style.display = 'none';
+
+    // Check if user is already logged in
+    checkExistingAuth();
+    
+    // Add stagger animation to elements
+    const animatedElements = document.querySelectorAll('.hero > *');
+    animatedElements.forEach((el, index) => {
+        el.style.animationDelay = `${index * 0.2}s`;
+    });
+});
+
+// Check for existing authentication
+async function checkExistingAuth() {
+    try {
+        // Check session storage first
+        const userSession = sessionStorage.getItem('futo_user_session');
+        if (userSession) {
+            const session = JSON.parse(userSession);
+            // Check if session is still valid (24 hours)
+            if (Date.now() - session.timestamp < 24 * 60 * 60 * 1000) {
+                console.log('📋 Found valid session, checking with Supabase...');
+                
+                // Verify with Supabase
+                const { user } = await window.supabaseManager.getCurrentUser();
+                if (user) {
+                    console.log('✅ User already authenticated, redirecting to dashboard...');
+                    window.location.href = './test.html';
+                    return;
+                }
+            }
+            // Clear invalid session
+            sessionStorage.removeItem('futo_user_session');
         }
+
+        // Set up auth state listener
+        window.supabaseManager.onAuthStateChange((event, session) => {
+            console.log('🔄 Auth state changed:', event);
+            
+            if (event === 'SIGNED_IN' && session) {
+                console.log('✅ User signed in:', session.user.email);
+                
+                // Store session
+                sessionStorage.setItem('futo_user_session', JSON.stringify({
+                    email: session.user.email,
+                    userId: session.user.id,
+                    loggedIn: true,
+                    timestamp: Date.now()
+                }));
+                
+                // Redirect to dashboard
+                window.location.href = './test.html';
+                
+            } else if (event === 'SIGNED_OUT') {
+                console.log('🚪 User signed out');
+                sessionStorage.removeItem('futo_user_session');
+            }
+        });
+        
+    } catch (error) {
+        console.error('Error checking authentication:', error);
     }
+}
 
+// Mobile menu functions
+function toggleMobileMenu() {
+    const menu = document.getElementById('mobileMenu');
+    menu.style.display = menu.style.display === 'flex' ? 'none' : 'flex';
+    document.body.addEventListener('click', closeMenuOnClickOutside, { once: true });
+}
 
-    // Clearance Requirements Animation
+function closeMenuOnClickOutside(e) {
+    const menu = document.getElementById('mobileMenu');
+    const toggle = document.querySelector('.mobile-menu-toggle');
+    if (!menu.contains(e.target) && !toggle.contains(e.target)) {
+        menu.style.display = 'none';
+    }
+}
+
+// Clearance Requirements Animation
 let currentRequirement = 0;
 const requirements = document.querySelectorAll('.requirement-item');
 const dots = document.querySelectorAll('.dot');
 const totalRequirements = requirements.length;
 
 function showRequirement(index) {
-    // Hide all requirements
+    if (requirements.length === 0) return;
+    
     requirements.forEach(req => req.classList.remove('active'));
     dots.forEach(dot => dot.classList.remove('active'));
     
-    // Show current requirement
-    requirements[index].classList.add('active');
-    dots[index].classList.add('active');
+    if (requirements[index] && dots[index]) {
+        requirements[index].classList.add('active');
+        dots[index].classList.add('active');
+    }
 }
 
 function nextRequirement() {
+    if (totalRequirements === 0) return;
     currentRequirement = (currentRequirement + 1) % totalRequirements;
     showRequirement(currentRequirement);
 }
 
-// Auto-cycle through requirements
-let requirementInterval = setInterval(nextRequirement, 3000);
+// Initialize requirements animation
+if (requirements.length > 0) {
+    let requirementInterval = setInterval(nextRequirement, 3000);
 
-// Add click handlers for dots
-dots.forEach((dot, index) => {
-    dot.addEventListener('click', () => {
-        currentRequirement = index;
-        showRequirement(currentRequirement);
-        
-        // Reset interval
-        clearInterval(requirementInterval);
-        requirementInterval = setInterval(nextRequirement, 3000);
+    // Add click handlers for dots
+    dots.forEach((dot, index) => {
+        dot.addEventListener('click', () => {
+            currentRequirement = index;
+            showRequirement(currentRequirement);
+            
+            // Reset interval
+            clearInterval(requirementInterval);
+            requirementInterval = setInterval(nextRequirement, 3000);
+        });
     });
-});
 
-// Pause animation on hover
-const requirementsSection = document.querySelector('.clearance-requirements');
-// On page load and reload, show the first requirement
-showRequirement(0);
+    // Pause animation on hover
+    const requirementsSection = document.querySelector('.clearance-requirements');
+    if (requirementsSection) {
+        showRequirement(0);
 
-requirementsSection.addEventListener('mouseenter', () => {
-    clearInterval(requirementInterval);
-});
+        requirementsSection.addEventListener('mouseenter', () => {
+            clearInterval(requirementInterval);
+        });
 
-requirementsSection.addEventListener('mouseleave', () => {
-    requirementInterval = setInterval(nextRequirement, 3000);
-});
+        requirementsSection.addEventListener('mouseleave', () => {
+            requirementInterval = setInterval(nextRequirement, 3000);
+        });
+    }
+}
