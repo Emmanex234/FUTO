@@ -942,5 +942,194 @@ async function loadProfileFormData() {
         });
 
 
+        // FUTO Chatbot JavaScript
+const chatData = {
+    "How do I complete my profile?": {
+        answer: "To complete your profile:\n\n1. Click the 'Edit Profile' button or the edit icon on your profile picture\n2. Fill in all required fields: Full Name, Registration Number, Department, School, and Year of Clearance\n3. Upload a clear profile photo\n4. Add your phone number for communication\n5. Click 'Save Profile'\n\nYour profile must be completed before uploading clearance documents.",
+        followUp: ["What documents do I need to upload?", "How do I upload documents?", "What if my profile won't save?"]
+    },
+    "What documents do I need to upload?": {
+        answer: "You need to upload 8 different clearance documents:\n\n• Library Clearance\n• Departmental Clearance\n• Faculty Clearance\n• Registry Clearance\n• Bursary Clearance\n• Student Affairs Clearance\n• Hostel Clearance (if applicable)\n• Medical Clearance\n\nEach document should be a clear PDF or image file. Make sure all documents are properly signed and stamped by the respective offices.",
+        followUp: ["How do I upload documents?", "What file formats are accepted?", "What if a document is rejected?"]
+    },
+    "How do I upload documents?": {
+        answer: "To upload your clearance documents:\n\n1. Complete your profile first\n2. In the 'Upload Requirements' section, click on any document card\n3. Select the appropriate file from your device\n4. Wait for the upload to complete\n5. Check the document status section for approval updates\n\nSupported formats: PDF, JPG, PNG (Max size: 5MB per file). Ensure documents are clear and readable.",
+        followUp: ["What file formats are accepted?", "What if upload fails?", "How long does approval take?"]
+    },
+    "What file formats are accepted?": {
+        answer: "Accepted file formats:\n\n✅ PDF (.pdf) - Recommended\n✅ JPEG (.jpg, .jpeg)\n✅ PNG (.png)\n\n📏 Maximum file size: 5MB per document\n📱 Minimum resolution: 300 DPI for clear text\n\nTips for best results:\n• Scan documents at high quality\n• Ensure all text is readable\n• Avoid blurry or dark images\n• Use PDF format when possible",
+        followUp: ["How do I upload documents?", "What if my file is too large?", "What makes a good document scan?"]
+    },
+    "How long does approval take?": {
+        answer: "Document approval timeline:\n\n⏰ Standard Processing: 3-5 business days\n🚀 Peak periods: 7-10 business days\n📧 You'll receive email notifications for status updates\n\nStatus meanings:\n• 🟡 Pending: Under review\n• ✅ Approved: Document accepted\n• ❌ Rejected: Needs resubmission\n\nCheck your dashboard regularly for real-time status updates.",
+        followUp: ["What if a document is rejected?", "How do I check my progress?", "Can I contact someone about delays?"]
+    },
+    "What if a document is rejected?": {
+        answer: "If your document is rejected:\n\n1. 📧 Check your email for rejection reasons\n2. 🔍 Review the feedback provided\n3. ✏️ Correct the issues mentioned\n4. 📤 Re-upload the corrected document\n\nCommon rejection reasons:\n• Unclear or blurry image\n• Missing signatures/stamps\n• Wrong document type\n• Expired clearance date\n\nEnsure all requirements are met before resubmitting.",
+        followUp: ["How do I upload documents?", "What makes a good document scan?", "How do I contact support?"]
+    },
+    "How do I check my progress?": {
+        answer: "Monitor your clearance progress through:\n\n📊 Progress Overview Card:\n• Shows overall completion percentage\n• Displays upload, approval, and rejection counts\n• Visual progress bar\n\n📋 Document Status Section:\n• Individual document status\n• Real-time updates\n• Action buttons for rejected items\n\n📱 The dashboard updates automatically when new approvals come in.",
+        followUp: ["What do the status colors mean?", "How often is progress updated?", "Can I download my clearance report?"]
+    },
+    "Can I download my clearance report?": {
+        answer: "Yes! Once all documents are approved:\n\n1. ✅ Complete all 8 document uploads\n2. ⏳ Wait for all approvals\n3. 📥 Click 'Download Report' in Quick Actions\n4. 📄 Get your official clearance certificate\n\nThe report includes:\n• Your complete profile information\n• All approved clearance documents\n• Official FUTO clearance stamp\n• QR code for verification\n\n⚠️ Report is only available when 100% complete.",
+        followUp: ["What if not all documents are approved?", "Is the report officially recognized?", "How do I contact support?"]
+    },
+    "How do I contact support?": {
+        answer: "Get help through multiple channels:\n\n📞 Support Options:\n• Click 'Contact Support' in the Help section\n• Email: clearance@futo.edu.ng\n• Phone: +234-XXX-XXX-XXXX\n• Visit: Student Affairs Office\n\n🕒 Support Hours:\n• Monday - Friday: 8:00 AM - 5:00 PM\n• Response time: Within 24 hours\n\nFor urgent issues, visit the Student Affairs Office directly with your registration number and clearance documents.",
+        followUp: ["What information should I provide when contacting support?", "What are common technical issues?", "How do I reset my password?"]
+    },
+    "What are common technical issues?": {
+        answer: "Common issues and solutions:\n\n🔧 Upload Problems:\n• Check internet connection\n• Reduce file size below 5MB\n• Use supported formats (PDF, JPG, PNG)\n• Clear browser cache\n\n👤 Profile Issues:\n• Ensure all required fields are filled\n• Use valid registration number format\n• Check department/school selection\n\n🔄 If problems persist:\n• Try a different browser\n• Disable ad blockers\n• Contact technical support",
+        followUp: ["How do I contact support?", "What file formats are accepted?", "How do I complete my profile?"]
+    }
+};
+
+let currentQuestions = Object.keys(chatData);
+let chatHistory = [];
+
+function initializeFUTOChat() {
+    displayQuestions(currentQuestions);
+}
+
+function displayQuestions(questions) {
+    const container = document.getElementById('questionsContainer');
+    if (!container) return;
+    
+    container.innerHTML = '';
+    
+    questions.forEach(question => {
+        const button = document.createElement('button');
+        button.className = 'question-btn w-full text-left p-2 rounded-lg text-xs bg-white hover:bg-green-50 text-gray-700';
+        button.textContent = question;
+        button.onclick = () => handleQuestionClick(question);
+        container.appendChild(button);
+    });
+}
+
+function handleQuestionClick(question) {
+    // Add user message
+    addMessage(question, 'user');
+    
+    // Show typing indicator
+    showTypingIndicator();
+    
+    // Simulate processing delay
+    setTimeout(() => {
+        hideTypingIndicator();
+        
+        const response = chatData[question];
+        if (response) {
+            addMessage(response.answer, 'bot');
+            
+            // Update available questions with follow-up questions
+            if (response.followUp && response.followUp.length > 0) {
+                currentQuestions = response.followUp;
+                displayQuestions(currentQuestions);
+            }
+        }
+    }, 1000);
+}
+
+function addMessage(message, sender) {
+    const messagesContainer = document.getElementById('chatMessages');
+    if (!messagesContainer) return;
+    
+    const messageDiv = document.createElement('div');
+    
+    if (sender === 'user') {
+        messageDiv.className = 'flex items-start space-x-2 justify-end';
+        messageDiv.innerHTML = `
+            <div class="chat-bubble-user text-white p-3 rounded-2xl rounded-tr-sm max-w-xs">
+                <p class="text-sm">${message}</p>
+            </div>
+            <div class="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center flex-shrink-0">
+                <i class="fas fa-user text-gray-600 text-xs"></i>
+            </div>
+        `;
+    } else {
+        messageDiv.className = 'flex items-start space-x-2';
+        messageDiv.innerHTML = `
+            <div class="w-8 h-8 bg-gradient-to-r from-green-500 to-green-600 rounded-full flex items-center justify-center flex-shrink-0">
+                <i class="fas fa-robot text-white text-xs"></i>
+            </div>
+            <div class="chat-bubble-bot text-gray-800 p-3 rounded-2xl rounded-tl-sm max-w-xs">
+                <p class="text-sm whitespace-pre-line">${message}</p>
+            </div>
+        `;
+    }
+    
+    messagesContainer.appendChild(messageDiv);
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    
+    chatHistory.push({message, sender});
+}
+
+function showTypingIndicator() {
+    const messagesContainer = document.getElementById('chatMessages');
+    if (!messagesContainer) return;
+    
+    const typingDiv = document.createElement('div');
+    typingDiv.id = 'typingIndicator';
+    typingDiv.className = 'flex items-start space-x-2';
+    typingDiv.innerHTML = `
+        <div class="w-8 h-8 bg-gradient-to-r from-green-500 to-green-600 rounded-full flex items-center justify-center flex-shrink-0">
+            <i class="fas fa-robot text-white text-xs"></i>
+        </div>
+        <div class="chat-bubble-bot text-gray-800 p-3 rounded-2xl rounded-tl-sm max-w-xs typing-indicator">
+            <p class="text-sm">Typing...</p>
+        </div>
+    `;
+    messagesContainer.appendChild(typingDiv);
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+}
+
+function hideTypingIndicator() {
+    const typingIndicator = document.getElementById('typingIndicator');
+    if (typingIndicator) {
+        typingIndicator.remove();
+    }
+}
+
+function toggleChat() {
+    const chatWindow = document.getElementById('chatWindow');
+    const chatToggle = document.getElementById('chatToggle');
+    
+    if (!chatWindow || !chatToggle) return;
+    
+    if (chatWindow.classList.contains('hidden')) {
+        chatWindow.classList.remove('hidden');
+        chatToggle.innerHTML = '<i class="fas fa-times text-xl"></i>';
+    } else {
+        chatWindow.classList.add('hidden');
+        chatToggle.innerHTML = '<i class="fas fa-comments text-xl"></i>';
+    }
+}
+
+function resetChat() {
+    // Clear chat messages except welcome message
+    const messagesContainer = document.getElementById('chatMessages');
+    if (!messagesContainer) return;
+    
+    const welcomeMessage = messagesContainer.children[0];
+    messagesContainer.innerHTML = '';
+    messagesContainer.appendChild(welcomeMessage);
+    
+    // Reset questions to original set
+    currentQuestions = Object.keys(chatData);
+    displayQuestions(currentQuestions);
+    
+    // Clear chat history
+    chatHistory = [];
+}
+
+// Initialize when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    // Small delay to ensure DOM is fully loaded
+    setTimeout(initializeFUTOChat, 100);
+});
+
+
 
         

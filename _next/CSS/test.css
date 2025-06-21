@@ -91,3 +91,44 @@
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
 }
+
+/* Chatbot Styles */
+.chat-bubble-user {
+    background: linear-gradient(135deg, #10b981, #059669);
+    animation: slideInRight 0.3s ease-out;
+}
+.chat-bubble-bot {
+    background: linear-gradient(135deg, #f3f4f6, #e5e7eb);
+    animation: slideInLeft 0.3s ease-out;
+}
+.question-btn {
+    transition: all 0.3s ease;
+    border: 1px solid #d1d5db;
+}
+.question-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15);
+    border-color: #10b981;
+}
+.typing-indicator {
+    animation: pulse 1.5s infinite;
+}
+@keyframes slideInRight {
+    from { transform: translateX(20px); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+@keyframes slideInLeft {
+    from { transform: translateX(-20px); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+.chatbot-widget {
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+.gradient-border {
+    background: linear-gradient(135deg, #10b981, #059669);
+    padding: 1px;
+}
