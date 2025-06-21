@@ -1001,7 +1001,7 @@ function displayQuestions(questions) {
     
     questions.forEach(question => {
         const button = document.createElement('button');
-        button.className = 'question-btn w-full text-left p-2 rounded-lg text-xs bg-white hover:bg-green-50 text-gray-700';
+        button.className = 'question-btn w-full text-left p-2 md:p-2 rounded-lg text-xs md:text-xs bg-white hover:bg-green-50 text-gray-700';
         button.textContent = question;
         button.onclick = () => handleQuestionClick(question);
         container.appendChild(button);
@@ -1041,7 +1041,7 @@ function addMessage(message, sender) {
     if (sender === 'user') {
         messageDiv.className = 'flex items-start space-x-2 justify-end';
         messageDiv.innerHTML = `
-            <div class="chat-bubble-user text-white p-3 rounded-2xl rounded-tr-sm max-w-xs">
+            <div class="chat-bubble-user text-white p-3 rounded-2xl rounded-tr-sm max-w-xs md:max-w-xs">
                 <p class="text-sm">${message}</p>
             </div>
             <div class="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center flex-shrink-0">
@@ -1054,7 +1054,7 @@ function addMessage(message, sender) {
             <div class="w-8 h-8 bg-gradient-to-r from-green-500 to-green-600 rounded-full flex items-center justify-center flex-shrink-0">
                 <i class="fas fa-robot text-white text-xs"></i>
             </div>
-            <div class="chat-bubble-bot text-gray-800 p-3 rounded-2xl rounded-tl-sm max-w-xs">
+            <div class="chat-bubble-bot text-gray-800 p-3 rounded-2xl rounded-tl-sm max-w-xs md:max-w-xs">
                 <p class="text-sm whitespace-pre-line">${message}</p>
             </div>
         `;
@@ -1129,7 +1129,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // Small delay to ensure DOM is fully loaded
     setTimeout(initializeFUTOChat, 100);
 });
-
 
 
         
